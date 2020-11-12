@@ -11,19 +11,21 @@ from model import Model
 train_window_list = [12, 15]
 epochs_list = [500, 600, 700, 800]
 hidden_layers_list = [150, 200, 250]
-batch_size_list = [1, 4, 10]
+batch_size_list = [4, 10]
+test_split = .2
 
 for batch_size in batch_size_list:
     for train_window in train_window_list:
-        data = Data(test_data_size=train_window)
+        data = Data()
+        test_split = int((test_split*len(data)))
         train_idx, train_vals = data[:-train_window]
         test_idx, test_vals = data[-train_window:]
         idx_comb = torch.cat((train_idx, test_idx))
 
-        train_inout_seq = data.create_inout_seq(train_vals)
-        test_inout_seq = data.create_inout_seq(torch.cat((train_vals, test_vals)))
+        train_inout_seq = data.create_inout_seq(train_vals, train_window=train_window)
+        test_inout_seq = data.create_inout_seq(torch.cat((train_vals, test_vals)), train_window=train_window)
 
-        train_dataloader = torch.utils.data.DataLoader(train_inout_seq, batch_size=batch_size, shuffle=False)
+        train_dataloader = torch.utils.data.DataLoader(train_inout_seq, batch_size=batch_size, shuffle=False, drop_last=True)
 
         for epochs in epochs_list:
             for hidden_layers in hidden_layers_list:
@@ -48,7 +50,7 @@ for batch_size in batch_size_list:
 
                 ax.plot(idx_comb[-len(eval_pred):], raw_train_pred)
                 ax.plot(idx_comb, raw_vals_comb)
-                ax.set_title('Predicted v. Actual Passenger Counts\nLoss: {}'.format(eval_loss))
+                ax.set_title('Predicted v. Actual Passenger Counts\nLoss: {}'.format(eval_loss.mean()))
                 plt.axvline(x=idx_comb[-1]-train_window, color='g')
                 ax.legend(['Predicted', 'Actual'])
                 ax.set_ylabel("Passengers")

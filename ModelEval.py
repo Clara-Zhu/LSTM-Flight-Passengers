@@ -9,27 +9,20 @@ from data import Data
 def evaluate_models(files, cols):
     df_evals = pd.DataFrame(columns=cols)
     for model_name in files:
-        tw, e, h = model_name.split('_')
+        tw, e, b, h = model_name.split('_')
         tw = int(''.join([x for x in tw if x.isdigit()]))
         e = int(''.join([x for x in e if x.isdigit()]))
+        b = int(''.join([x for x in b if x.isdigit()]))
         h = int(''.join([x for x in h if x.isdigit()]))
 
-        data = Data(tw)
-        train_data, test_data = data.get_data()
-        train_idx, train_vals = train_data
-        test_idx, test_vals = test_data
-
-        train_vals = torch.as_tensor(train_vals.squeeze(), dtype=torch.float32)
-        test_vals = torch.as_tensor(test_vals.squeeze(), dtype=torch.float32)
-        train_idx, test_idx = train_idx.tolist(), test_idx.tolist()
-        comb_idx = train_idx + test_idx
-        comb_vals = torch.cat((train_vals, test_vals))
-        comb_inout_seq = data.create_test_seq(comb_vals)
+        data = Data()
+        comb_idx, comb_vals = data[:]
+        comb_inout_seq = data.create_test_seq(comb_vals, min_seq_length=tw)
 
         mdl = model.load_model(model_name)
         print('Evaluating ' + model_name)
         preds, losses = mdl.evaluate(comb_inout_seq)
-        dict = {'Model Name': model_name, 'Training Window': tw, 'Epochs': e, 'Hidden Layers': h, 'Losses': losses}
+        dict = {'Model Name': model_name, 'Training Window': tw, 'Epochs': e, 'Hidden Layers': h, 'Losses': losses, 'Batches': b}
         df_evals = df_evals.append(dict, ignore_index=True)
 
     print('\n\nWriting to CSV')
@@ -37,7 +30,7 @@ def evaluate_models(files, cols):
     return df_evals
 
 def main():
-    cols=['Model Name', 'Training Window', 'Epochs', 'Hidden Layers', 'Losses']
+    cols=['Model Name', 'Training Window', 'Epochs', 'Hidden Layers', 'Losses', 'Batches']
     df_evals = pd.DataFrame(columns=cols)
 
     os.chdir('Models')

@@ -6,8 +6,7 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 class Data(torch.utils.data.Dataset):
-    def __init__(self, test_data_size: int = 12):
-        self.test_data_size = test_data_size
+    def __init__(self):
         self.scaler = MinMaxScaler(feature_range=(-1, 1))
         self.transform = ToTensor()
         tmp_flight_data = sns.load_dataset("flights")['passengers']

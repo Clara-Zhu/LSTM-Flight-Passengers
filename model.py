@@ -50,9 +50,8 @@ class Model(nn.Module):
 
                 #seq = torch.as_tensor(seq, dtype=torch.float32)
                 #label = torch.as_tensor(label.reshape(-1, ), dtype=torch.float32)
-
                 y_pred = self(seq)
-                loss = self.loss_fn(y_pred, label)
+                loss = self.loss_fn(y_pred.squeeze(), label[-1].squeeze())
                 loss.backward()
                 self.optimizer.step()
                 if j == len(train_inout_seq) - 1:
@@ -110,11 +109,11 @@ class Model(nn.Module):
         for seq, label in test_inout_seq:
             # seq = torch.as_tensor(seq)
             #label = torch.as_tensor(label)
-            seq = seq.reshape(1, self.seq_len, self.in_size)
+            seq = seq.reshape(1, -1, self.in_size)
             preds[j] = self(seq).detach().numpy()[0]
             pred = torch.as_tensor(preds[j])
             lbl = torch.as_tensor(label[0])
-            losses[j] = self.loss_fn(pred, lbl).detach().numpy()
+            losses[j] = self.loss_fn(pred.squeeze(), lbl.squeeze()).detach().numpy()
             j += 1
         # labels = [x[1].tolist().pop() for x in test_inout_seq]
         return preds, losses
