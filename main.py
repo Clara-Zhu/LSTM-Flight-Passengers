@@ -54,7 +54,7 @@ for batch_size in batch_size_list:
                 plt.axvline(x=idx_comb[-1]-train_window, color='g')
                 ax.legend(['Predicted', 'Actual'])
                 ax.set_ylabel("Passengers")
-                plt.savefig("Visuals/" + model_name + "/Comparison.png")
+                plt.savefig("Visuals/" + model_name + "/Comparison.png", dpi=600)
                 plt.close()
                 print("Prediction Completed: Check Visuals")
 
