@@ -1,53 +1,35 @@
 import time
 import psutil
+import pandas as pd
+from contextlib import contextmanager
 
 
-def monitor_start():
-    """
-    记录监控开始的时间戳。
-    """
-    return time.time()
+class OperatorMonitor:
+    def __init__(self):
+        self.data = []
 
+    @contextmanager
+    def monitor(self, model_name, operator_name, layer_number):
+        start_time = time.time()
+        start_memory = psutil.Process().memory_info().rss
 
-def monitor_end(start_time):
-    """
-    计算从监控开始到结束所经过的时间。
+        try:
+            yield  # 在这里执行算子代码
+        finally:
+            end_time = time.time()
+            end_memory = psutil.Process().memory_info().rss
 
-    参数:
-    start_time -- 监控开始的时间戳。
-    """
-    end_time = time.time()
-    print(f"监控耗时：{end_time - start_time}秒")
-    return end_time - start_time
+            exec_time = end_time - start_time
+            memory_used = end_memory - start_memory
 
+            self.data.append({
+                'model_name': model_name,
+                'operator_name': operator_name,
+                'memory_used': memory_used,
+                'exec_time': exec_time,
+                'layer_number': layer_number
+            })
 
-def monitor_memory(process=None):
-    """
-    监控内存使用情况。
-
-    参数:
-    process -- 可选的进程对象，默认为当前进程。
-    """
-    if process is None:
-        process = psutil.Process()
-
-    memory_info = process.memory_info()
-    return memory_info.rss  # 返回常驻集大小，单位为字节
-
-
-def monitor_memory_diff(process=None):
-    """
-    监控内存使用差异。
-
-    参数:
-    process -- 可选的进程对象，默认为当前进程。
-    """
-    if process is None:
-        process = psutil.Process()
-
-    before = process.memory_info().rss
-    time.sleep(0.1)  # 短暂等待，以便进程有机会使用更多内存
-    after = process.memory_info().rss
-    return after - before
-
-# 可以添加更多监控函数，例如CPU使用率、GPU使用率等。
+    def save_to_csv(self, filename):
+        df = pd.DataFrame(self.data)
+        df.to_csv(filename, index=False)

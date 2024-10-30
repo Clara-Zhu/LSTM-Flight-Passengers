@@ -80,14 +80,20 @@ class Model(nn.Module):
         print("Training Complete: Check " + path_plt)
 
     def save_model(self, model_name):
-        model_path = 'Models/' + model_name
-        while os.path.isfile(model_path):
-            choice = input("Model Exists:\n1: Replace\n2: New Model\n")
-            if choice == '1':
-                break
-            elif choice == '2':
-                name = input("Enter model name\n")
-                model_path = 'Models/' + name
+        # model_path = 'Models/' + model_name
+        # while os.path.isfile(model_path):
+        #     choice = input("Model Exists:\n1: Replace\n2: New Model\n")
+        #     if choice == '1':
+        #         break
+        #     elif choice == '2':
+        #         name = input("Enter model name\n")
+        #         model_path = 'Models/' + name
+        # torch.save(self.state_dict(), model_path)
+        model_path = 'Models/' + model_name + '.pt'  # 确保模型文件有扩展名
+        if os.path.isfile(model_path):
+            print(f"Model {model_name} already exists and will be replaced.")
+        else:
+            print(f"Model {model_name} does not exist and will be created.")
         torch.save(self.state_dict(), model_path)
 
     def predict(self, test_inputs, train_window: int = 12, fut_pred: int = 12):

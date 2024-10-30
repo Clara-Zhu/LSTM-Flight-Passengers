@@ -1,0 +1,5 @@
+model_name,operator_name,memory_used,exec_time,layer_number
+LSTM,create_data,2637824,0.0070095062255859375,0
+LSTM,create_data,4096,0.0029916763305664062,0
+LSTM,create_data,4096,0.002996206283569336,0
+LSTM,create_data,4096,0.002992868423461914,0

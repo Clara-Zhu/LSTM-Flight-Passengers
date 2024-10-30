@@ -37,6 +37,7 @@ class Data(torch.utils.data.Dataset):
             inout_seq.append((train_seq, train_label))
         return inout_seq
 
+    # 创建一个测试序列
     def create_test_seq(self, input_data, min_seq_length: int = 12):
         inout_seq = []
         for i in range(len(input_data) - min_seq_length):
@@ -45,14 +46,18 @@ class Data(torch.utils.data.Dataset):
             inout_seq.append((in_seq, out_label))
         return inout_seq
 
+    # 归一化数据
     def fit_transform(self, data):
         return self.scaler.fit_transform(data)
 
+    # 归一化数据的逆变换
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
 
+# 将数据转换为张量
 class ToTensor(object):
     def __call__(self, sample: object):
+        # 检查 sample 的类型，如果 sample 是 ndarray 或 Series，将其转换为张量
         if isinstance(sample, ndarray):
             return torch.from_numpy(sample).float().reshape(-1, 1)
         elif isinstance(sample, list) or isinstance(sample, Series):
