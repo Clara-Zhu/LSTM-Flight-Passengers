@@ -21,13 +21,17 @@ class Model(nn.Module):
         Input: (batch_size, sequence length, input/feature size)
         Hidden States (for forward): (),(): (num_layers*num_directions, batch_size, hidden_size) 
         '''
+        # LSTM层，用于处理序列数据
         self.lstm = nn.LSTM(input_size=in_size, hidden_size=hid, num_layers=num_layers, batch_first=True)
+        # 全连接层（线性层），将LSTM的输出映射到最终的预测值
         self.linear = nn.Linear(in_features=hid, out_features=out_size)
         # self.hidden_cell = (torch.zeros(1, 1, self.hidden_size),
         #                     torch.zeros(1, 1, self.hidden_size))
         self.h_ = torch.zeros(num_layers, batch_size, hid)
         self.c_ = torch.zeros(num_layers, batch_size, hid)
+        # 均方误差损失函数，衡量模型预测值与真实值之间的差异
         self.loss_fn = nn.MSELoss()
+        # 优化器，根据损失函数计算的梯度来更新模型的权重
         self.optimizer = torch.optim.Adam(self.parameters(), lr=.001)
 
     def forward(self, input_seq):
