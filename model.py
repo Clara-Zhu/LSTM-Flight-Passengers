@@ -8,7 +8,10 @@ import matplotlib.pyplot as plt
 
 
 class Model(nn.Module):
-    def __init__(self, in_size: int = 1, hid: int = 100, num_layers: int = 1, out_size: int = 1, batch_size: int = 1, seq_len: int = 12):
+    def __init__(self,
+                 in_size: int = 1, hid: int = 100, num_layers: int = 1,
+                 out_size: int = 1, batch_size: int = 1, seq_len: int = 12,
+                 monitor=None):
         super().__init__()
         self.in_size = in_size
         self.hidden_size = hid
@@ -16,21 +19,32 @@ class Model(nn.Module):
         self.out_size = out_size
         self.batch_size = batch_size
         self.seq_len = seq_len
+        self.monitor = monitor
 
         '''LSTM Expected Dimensions:
         Input: (batch_size, sequence length, input/feature size)
         Hidden States (for forward): (),(): (num_layers*num_directions, batch_size, hidden_size) 
         '''
         # LSTM层，用于处理序列数据
-        self.lstm = nn.LSTM(input_size=in_size, hidden_size=hid, num_layers=num_layers, batch_first=True)
+        if self.monitor is not None:
+            with self.monitor.monitor("LSTM", "lstm_data_initialization", 0):
+                self.lstm = nn.LSTM(input_size=in_size, hidden_size=hid, num_layers=num_layers, batch_first=True)
+            self.monitor.save_to_csv("operator_monitoring.csv")
+        else:
+            self.lstm = nn.LSTM(input_size=in_size, hidden_size=hid, num_layers=num_layers, batch_first=True)
+
         # 全连接层（线性层），将LSTM的输出映射到最终的预测值
         self.linear = nn.Linear(in_features=hid, out_features=out_size)
         # self.hidden_cell = (torch.zeros(1, 1, self.hidden_size),
         #                     torch.zeros(1, 1, self.hidden_size))
+
+        # 初始化隐藏状态和细胞状态
         self.h_ = torch.zeros(num_layers, batch_size, hid)
         self.c_ = torch.zeros(num_layers, batch_size, hid)
+
         # 均方误差损失函数，衡量模型预测值与真实值之间的差异
         self.loss_fn = nn.MSELoss()
+
         # 优化器，根据损失函数计算的梯度来更新模型的权重
         self.optimizer = torch.optim.Adam(self.parameters(), lr=.001)
 
@@ -82,6 +96,9 @@ class Model(nn.Module):
         plt.savefig(path_plt)
         plt.close()
         print("Training Complete: Check " + path_plt)
+
+        # 保存训练完成后的监控数据
+        # self.monitor.save_to_csv("operator_monitoring.csv")
 
     def save_model(self, model_name):
         # model_path = 'Models/' + model_name

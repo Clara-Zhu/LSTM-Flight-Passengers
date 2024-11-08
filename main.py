@@ -33,7 +33,7 @@ for batch_size in batch_size_list:
             # 创建数据和测试序列
             data = Data()
         # 保存数据创建时的监控数据
-        monitor.save_to_csv("operator_monitoring.csv")
+        # monitor.save_to_csv("operator_monitoring.csv")
         test_split = int((test_split*len(data)))
         train_idx, train_vals = data[:-train_window]
         test_idx, test_vals = data[-train_window:]
@@ -54,7 +54,7 @@ for batch_size in batch_size_list:
                 print("MODEL: " + model_name)
                 # train model
                 model = Model(in_size=1, hid=hidden_layers, out_size=1,
-                              batch_size=batch_size, seq_len=train_window)
+                              batch_size=batch_size, seq_len=train_window, monitor=monitor)
                 model.fit(train_dataloader, epochs, model_name)
 
 
@@ -79,3 +79,5 @@ for batch_size in batch_size_list:
                 print("Prediction Completed: Check Visuals")
 
                 model.save_model(model_name)
+
+                monitor.save_to_csv("operator_monitoring.csv")
